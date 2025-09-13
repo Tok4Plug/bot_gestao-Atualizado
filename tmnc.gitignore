@@ -1,0 +1,12 @@
+# Ignorar cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ambiente virtual
+venv/
+.env
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
