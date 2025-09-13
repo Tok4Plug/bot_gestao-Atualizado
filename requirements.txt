@@ -37,6 +37,7 @@ fastapi==0.101.1
 # =============================
 cryptography==41.0.3
 python-jose==3.3.0
+cryptography-fernet==41.0.3  # garante Fernet standalone
 
 # =============================
 # Observabilidade / Métricas
