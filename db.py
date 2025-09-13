@@ -1,5 +1,4 @@
-# db.py (reescrito avançado - rastreio em tempo real 100%)
-
+# db.py (versão avançada completa)
 import os
 import asyncio
 import json
@@ -248,6 +247,7 @@ async def save_lead(data: dict, event_record: Optional[dict] = None, retries: in
                 if event_record:
                     if event_record.get("status") == "success":
                         buyer.last_sent_at = datetime.now(timezone.utc)
+                        buyer.sent = True
                     elif event_record.get("status") == "failed":
                         buyer.last_attempt_at = datetime.now(timezone.utc)
                         buyer.attempts = (buyer.attempts or 0) + 1
@@ -323,6 +323,34 @@ async def get_historical_leads(limit: int = 50, order_by_priority: bool = True):
         except Exception as e:
             logger.error(f"Erro get_historical_leads: {e}")
             return []
+        finally:
+            session.close()
+
+    return await loop.run_in_executor(None, db_sync)
+
+# ======================================
+# Sync Pending Leads (retry de pixels não enviados)
+# ======================================
+async def sync_pending_leads(batch_size: int = 20):
+    if not SessionLocal:
+        return 0
+    loop = asyncio.get_event_loop()
+
+    def db_sync():
+        session = SessionLocal()
+        try:
+            pending = session.query(Buyer).filter(Buyer.sent == False).limit(batch_size).all()
+            count = 0
+            for b in pending:
+                # aqui você pode disparar a lógica de reenvio de pixels
+                b.attempts = (b.attempts or 0) + 1
+                b.last_attempt_at = datetime.now(timezone.utc)
+                session.commit()
+                count += 1
+            return count
+        except Exception as e:
+            logger.error(f"Erro sync_pending_leads: {e}")
+            return 0
         finally:
             session.close()
 
