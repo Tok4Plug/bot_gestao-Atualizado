@@ -28,7 +28,7 @@ python-dotenv==1.0.1
 # =============================
 # Web server / Worker
 # =============================
-gunicorn==23.1.2
+gunicorn==23.0.0
 uvicorn==0.23.2
 fastapi==0.101.1
 
